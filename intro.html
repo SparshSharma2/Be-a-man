@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Character Introduction</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    h1 {
+      margin-top: 100px;
+      font-size: 28px;
+    }
+
+    p {
+      font-size: 18px;
+    }
+
+    /* Slide Menu */
+    .slide-menu {
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 0;
+      background: #333;
+      color: white;
+      overflow-x: hidden;
+      transition: 0.5s;
+      padding-top: 60px;
+    }
+
+    .slide-menu button {
+      background-color: #555;
+      color: white;
+      display: block;
+      margin: 10px auto;
+      width: 80%;
+      padding: 10px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .menu-btn {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: #555;
+      color: white;
+      padding: 5px 10px;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* Character Info in Slide Menu */
+    .character-info {
+      text-align: center;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="slide-menu" id="slideMenu">
+    <button onclick="closeMenu()">✕</button>
+    <button onclick="goBack()">⬅ Back</button>
+    <button onclick="saveData()">💾 Save</button>
+    <button onclick="loadData()">📂 Load</button>
+
+    <div class="character-info" id="characterInfo"></div>
+  </div>
+
+  <button class="menu-btn" onclick="openMenu()">☰</button>
+
+  <h1>Work in Progress</h1>
+  <p>This page is under development. Stay tuned!</p>
+
+  <script>
+    function openMenu() {
+      document.getElementById('slideMenu').style.width = '250px';
+      showCharacterInfo();
+    }
+
+    function closeMenu() {
+      document.getElementById('slideMenu').style.width = '0';
+    }
+
+    function goBack() {
+      window.location.href = 'character.html';
+    }
+
+    function saveData() {
+      const data = JSON.parse(localStorage.getItem('characterData') || '{}');
+      const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'character.json';
+      a.click();
+    }
+
+    function loadData() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'application/json';
+      input.onchange = (e) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const data = JSON.parse(event.target.result);
+          localStorage.setItem('characterData', JSON.stringify(data));
+          showCharacterInfo();
+        };
+        reader.readAsText(e.target.files[0]);
+      };
+      input.click();
+    }
+
+    function showCharacterInfo() {
+      const data = JSON.parse(localStorage.getItem('characterData') || '{}');
+      const characterInfo = document.getElementById('characterInfo');
+      if (data.name && data.age && data.avatar) {
+        characterInfo.innerHTML = `
+          <p><strong>Name:</strong> ${data.name}</p>
+          <p><strong>Age:</strong> ${data.age}</p>
+          <p><strong>Avatar:</strong></p>
+          <img src="${data.avatar}" alt="Avatar" style="width:100px; height:100px; border-radius:50%;">
+        `;
+      } else {
+        characterInfo.innerHTML = `<p>No character data available.</p>`;
+      }
+    }
+  </script>
+</body>
+</html>

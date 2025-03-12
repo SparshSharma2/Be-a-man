@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Character Creation</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      margin-top: 120px; /* Moves everything lower */
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+
+    label {
+      font-size: 18px;
+      display: block;
+      margin-top: 10px;
+    }
+
+    input, select {
+      font-size: 16px;
+      padding: 8px;
+      width: 80%;
+      max-width: 300px;
+      margin-top: 5px;
+    }
+
+    .avatar-container {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 3px solid white;
+      transition: transform 0.2s ease;
+    }
+
+    .avatar:hover {
+      transform: scale(1.1);
+    }
+
+    .selected {
+      border: 3px solid gold;
+    }
+
+    .button {
+      background-color: gold;
+      color: black;
+      font-size: 18px;
+      padding: 10px;
+      margin-top: 20px;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* Slide Menu */
+    .slide-menu {
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 0;
+      background: #333;
+      color: white;
+      overflow-x: hidden;
+      transition: 0.5s;
+      padding-top: 60px;
+    }
+
+    .slide-menu button {
+      background-color: #555;
+      color: white;
+      display: block;
+      margin: 10px auto;
+      width: 80%;
+      padding: 10px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .menu-btn {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: #555;
+      color: white;
+      padding: 5px 10px;
+      border: none;
+      cursor: pointer;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="slide-menu" id="slideMenu">
+    <button onclick="closeMenu()">✕</button>
+    <button onclick="goBack()">⬅ Back</button>
+    <button onclick="goNext()">➡ Next</button>
+    <button onclick="saveData()">💾 Save</button>
+    <button onclick="loadData()">📂 Load</button>
+  </div>
+
+  <button class="menu-btn" onclick="openMenu()">☰</button>
+
+  <div class="container">
+    <h1>Create Your Character</h1>
+
+    <label for="name">Enter Name:</label>
+    <input type="text" id="name">
+
+    <label for="age">Select Your Age:</label>
+    <select id="age">
+      <option value="">Select Age</option>
+      <!-- Looping ages dynamically -->
+      <script>
+        for (let i = 18; i <= 40; i++) {
+          document.write(`<option value="${i}">${i}</option>`);
+        }
+      </script>
+    </select>
+
+    <h2>Select Your Avatar</h2>
+    <div class="avatar-container">
+      <img src="images/hrithik.jpg" alt="Indian" class="avatar" onclick="selectAvatar('images/hrithik.jpg')">
+      <img src="images/henry.jpg" alt="European" class="avatar" onclick="selectAvatar('images/henry.jpg')">
+      <img src="images/son.jpg" alt="Asian" class="avatar" onclick="selectAvatar('images/son.jpg')">
+      <img src="images/staniel.jpg" alt="African" class="avatar" onclick="selectAvatar('images/staniel.jpg')">
+    </div>
+
+    <button class="button" onclick="saveCharacter()">Save Character</button>
+  </div>
+
+  <script>
+    function openMenu() {
+      document.getElementById('slideMenu').style.width = '250px';
+    }
+
+    function closeMenu() {
+      document.getElementById('slideMenu').style.width = '0';
+    }
+
+    function goBack() {
+      window.location.href = 'index.html';
+    }
+
+    function goNext() {
+      window.location.href = 'intro.html';
+    }
+
+    function selectAvatar(src) {
+      localStorage.setItem('avatar', src);
+      document.querySelectorAll('.avatar').forEach(img => img.classList.remove('selected'));
+      event.target.classList.add('selected');
+    }
+
+    function saveCharacter() {
+      const name = document.getElementById('name').value;
+      const age = document.getElementById('age').value;
+      const avatar = localStorage.getItem('avatar') || '';
+
+      if (!name || !age || !avatar) {
+        alert('Please enter all details and select an avatar.');
+        return;
+      }
+
+      const data = { name, age, avatar };
+      localStorage.setItem('characterData', JSON.stringify(data));
+
+      window.location.href = 'intro.html';
+    }
+
+    function saveData() {
+      const data = JSON.parse(localStorage.getItem('characterData') || '{}');
+      const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'character.json';
+      a.click();
+    }
+
+    function loadData() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'application/json';
+      input.onchange = (e) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const data = JSON.parse(event.target.result);
+          localStorage.setItem('characterData', JSON.stringify(data));
+
+          document.getElementById('name').value = data.name || '';
+          document.getElementById('age').value = data.age || '';
+          if (data.avatar) {
+            document.querySelectorAll('.avatar').forEach(img => {
+              if (img.src.includes(data.avatar)) img.classList.add('selected');
+            });
+          }
+        };
+        reader.readAsText(e.target.files[0]);
+      };
+      input.click();
+    }
+
+    // Load saved data when page refreshes
+    window.onload = function () {
+      const data = JSON.parse(localStorage.getItem('characterData') || '{}');
+      if (data.name) document.getElementById('name').value = data.name;
+      if (data.age) document.getElementById('age').value = data.age;
+      if (data.avatar) {
+        document.querySelectorAll('.avatar').forEach(img => {
+          if (img.src.includes(data.avatar)) img.classList.add('selected');
+        });
+      }
+    };
+  </script>
+</body>
+</html>
